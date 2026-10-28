@@ -10,3 +10,10 @@ class IgnoreEmailTestCase(SimpleTestCase):
         resultado = regra.test("SPAM@DOMINIO.COM")
 
         self.assertTrue(resultado)
+
+    def test_c02_ignorar_espacos_em_branco_nas_extremidades(self):
+        regra = IgnoreEmail(email_address="  spam@dominio.com ")
+
+        resultado = regra.test(" spam@dominio.com  ")
+
+        self.assertTrue(resultado)

@@ -1908,8 +1908,8 @@ class IgnoreEmail(models.Model):
 
             1-4 return True, 5 returns False.
         """
-        own_email = self.email_address.lower()
-        target_email = email.lower()
+        own_email = self.email_address.strip().lower()
+        target_email = email.strip().lower()
 
         own_parts = own_email.split("@")
         email_parts = target_email.split("@")
