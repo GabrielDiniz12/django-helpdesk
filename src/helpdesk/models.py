@@ -1897,6 +1897,13 @@ class IgnoreEmail(models.Model):
         else:
             return ", ".join([str(q) for q in queues])
 
+    @staticmethod
+    def _normalize_email(raw_email):
+        cleaned = raw_email.strip().lower()
+        if "<" in cleaned and ">" in cleaned:
+            cleaned = cleaned.split("<")[-1].split(">")[0].strip()
+        return cleaned
+
     def test(self, email):
         """
         Possible situations:
@@ -1908,8 +1915,8 @@ class IgnoreEmail(models.Model):
 
             1-4 return True, 5 returns False.
         """
-        own_email = self.email_address.strip().lower()
-        target_email = email.strip().lower()
+        own_email = self._normalize_email(self.email_address)
+        target_email = self._normalize_email(email)
 
         own_parts = own_email.split("@")
         email_parts = target_email.split("@")

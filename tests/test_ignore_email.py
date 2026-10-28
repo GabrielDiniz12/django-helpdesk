@@ -17,3 +17,10 @@ class IgnoreEmailTestCase(SimpleTestCase):
         resultado = regra.test(" spam@dominio.com  ")
 
         self.assertTrue(resultado)
+
+    def test_c03_extrair_endereco(self):  # quando remetente tiver nome de exibicao
+        regra = IgnoreEmail(email_address="spam@dominio.com")
+
+        resultado = regra.test("João Silva <spam@dominio.com>")
+
+        self.assertTrue(resultado)
