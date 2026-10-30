@@ -39,3 +39,14 @@ class IgnoreEmailTestCase(SimpleTestCase):
         regra = IgnoreEmail(email_address="*_username_*@email.com")
         resultado = regra.test("joao_username_silva@email.com")
         self.assertTrue(resultado)
+
+    def test_c07_curinga_no_inicio_do_dominio(self):
+        regra = IgnoreEmail(email_address="*@*.empresa.com")
+
+        resultado = regra.test("joao@mail.empresa.com")
+
+        self.assertTrue(resultado)
+        self.assertTrue(regra.test("joao@a.b.empresa.com"))
+        self.assertFalse(regra.test("joao@empresa.com"))
+        self.assertFalse(regra.test("joao@fakeempresa.com"))
+        self.assertFalse(regra.test("joao@mail.outra.com"))
