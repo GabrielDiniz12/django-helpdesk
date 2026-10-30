@@ -50,3 +50,16 @@ class IgnoreEmailTestCase(SimpleTestCase):
         self.assertFalse(regra.test("joao@empresa.com"))
         self.assertFalse(regra.test("joao@fakeempresa.com"))
         self.assertFalse(regra.test("joao@mail.outra.com"))
+
+    def test_c08_curinga_no_final_e_no_meio_do_dominio(self):
+        regra_fim = IgnoreEmail(email_address="*@empresa.*")
+        regra_meio = IgnoreEmail(email_address="*@mail.*.com")
+
+        resultado = regra_fim.test("joao@empresa.com.br")
+
+        self.assertTrue(resultado)
+        self.assertTrue(regra_fim.test("joao@empresa.org"))
+        self.assertFalse(regra_fim.test("joao@outraempresa.com"))
+        self.assertTrue(regra_meio.test("joao@mail.sp.com"))
+        self.assertFalse(regra_meio.test("joao@mail.sp.org"))
+        self.assertFalse(regra_meio.test("joao@mail.com"))

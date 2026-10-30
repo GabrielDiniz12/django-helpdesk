@@ -1939,14 +1939,7 @@ class IgnoreEmail(models.Model):
         return bool(
             own_email == target_email
             or self._wildcard_match(own_parts[0], email_parts[0])
-            and own_parts[1] == email_parts[1]
-            or self._wildcard_match(own_parts[0], email_parts[0])
-            and own_parts[1].startswith("*")
-            and email_parts[1].endswith(own_parts[1][1:])
-            or own_parts[1] == "*"
-            and own_parts[0] == email_parts[0]
-            or own_parts[0] == "*"
-            and own_parts[1] == "*"
+            and self._wildcard_match(own_parts[1], email_parts[1])
         )
 
 
