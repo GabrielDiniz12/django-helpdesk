@@ -63,3 +63,15 @@ class IgnoreEmailTestCase(SimpleTestCase):
         self.assertTrue(regra_meio.test("joao@mail.sp.com"))
         self.assertFalse(regra_meio.test("joao@mail.sp.org"))
         self.assertFalse(regra_meio.test("joao@mail.com"))
+
+    def test_c09_ignorar_subenderecamento_com_tag_mais(self):
+        regra = IgnoreEmail(email_address="spammer@empresa.com")
+        regra_com_tag = IgnoreEmail(email_address="spammer+promo@empresa.com")
+
+        resultado = regra.test("spammer+promo@empresa.com")
+
+        self.assertTrue(resultado)
+        self.assertTrue(regra.test("spammer+a+b@empresa.com"))
+        self.assertFalse(regra.test("outro+promo@empresa.com"))
+        self.assertTrue(regra_com_tag.test("spammer+promo@empresa.com"))
+        self.assertFalse(regra_com_tag.test("spammer+outra@empresa.com"))

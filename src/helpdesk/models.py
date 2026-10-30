@@ -1919,6 +1919,12 @@ class IgnoreEmail(models.Model):
             text = text[position + len(part) :]
         return text.endswith(parts[-1])
 
+    @staticmethod
+    def _base_username(username, rule_username):
+        if "+" in username and "+" not in rule_username:
+            return username.split("+")[0]
+        return username
+
     def test(self, email):
         """
         Possible situations:
@@ -1935,6 +1941,8 @@ class IgnoreEmail(models.Model):
 
         own_parts = own_email.split("@")
         email_parts = target_email.split("@")
+
+        email_parts[0] = self._base_username(email_parts[0], own_parts[0])
 
         return bool(
             own_email == target_email
