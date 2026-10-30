@@ -24,3 +24,18 @@ class IgnoreEmailTestCase(SimpleTestCase):
         resultado = regra.test("João Silva <spam@dominio.com>")
 
         self.assertTrue(resultado)
+
+    def test_c04_curinga_no_final_do_username(self):
+        regra = IgnoreEmail(email_address="username*@email.com")
+        resultado = regra.test("username_noreply@email.com")
+        self.assertTrue(resultado)
+
+    def test_c05_curinga_no_inicio_do_username(self):
+        regra = IgnoreEmail(email_address="*_noreply@email.com")
+        resultado = regra.test("empresa_noreply@email.com")
+        self.assertTrue(resultado)
+
+    def test_c06_curinga_no_inicio_e_final_do_username(self):
+        regra = IgnoreEmail(email_address="*_username_*@email.com")
+        resultado = regra.test("joao_username_silva@email.com")
+        self.assertTrue(resultado)

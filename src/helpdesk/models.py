@@ -1904,6 +1904,21 @@ class IgnoreEmail(models.Model):
             cleaned = cleaned.split("<")[-1].split(">")[0].strip()
         return cleaned
 
+    @staticmethod
+    def _wildcard_match(pattern, text):
+        parts = pattern.split("*")
+        if len(parts) == 1:
+            return pattern == text
+        if not text.startswith(parts[0]):
+            return False
+        text = text[len(parts[0]) :]
+        for part in parts[1:-1]:
+            position = text.find(part)
+            if position == -1:
+                return False
+            text = text[position + len(part) :]
+        return text.endswith(parts[-1])
+
     def test(self, email):
         """
         Possible situations:
@@ -1923,7 +1938,7 @@ class IgnoreEmail(models.Model):
 
         return bool(
             own_email == target_email
-            or own_parts[0] == "*"
+            or self._wildcard_match(own_parts[0], email_parts[0])
             and own_parts[1] == email_parts[1]
             or own_parts[1] == "*"
             and own_parts[0] == email_parts[0]
