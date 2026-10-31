@@ -75,3 +75,11 @@ class IgnoreEmailTestCase(SimpleTestCase):
         self.assertFalse(regra.test("outro+promo@empresa.com"))
         self.assertTrue(regra_com_tag.test("spammer+promo@empresa.com"))
         self.assertFalse(regra_com_tag.test("spammer+outra@empresa.com"))
+
+
+    def test_c10_email_recebido_sem_arroba_retorna_falso(self):
+        regra = IgnoreEmail(email_address="*@dominio.com")
+
+        resultado = regra.test("semarroba")
+
+        self.assertFalse(resultado)

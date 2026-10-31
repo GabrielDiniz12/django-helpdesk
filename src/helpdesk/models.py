@@ -1939,6 +1939,11 @@ class IgnoreEmail(models.Model):
         own_email = self._normalize_email(self.email_address)
         target_email = self._normalize_email(email)
 
+        
+        if "@" not in target_email:
+            return False
+        
+
         own_parts = own_email.split("@")
         email_parts = target_email.split("@")
 
