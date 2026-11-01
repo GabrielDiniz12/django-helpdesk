@@ -83,3 +83,11 @@ class IgnoreEmailTestCase(SimpleTestCase):
         resultado = regra.test("semarroba")
 
         self.assertFalse(resultado)
+
+
+    def test_c11_regra_curinga_global_unico_ignora_qualquer_email(self):
+      regra = IgnoreEmail(email_address="*")
+
+      resultado = regra.test("qualquer@dominio.com")
+
+      self.assertTrue(resultado)

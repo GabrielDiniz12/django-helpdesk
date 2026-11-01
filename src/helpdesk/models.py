@@ -1942,6 +1942,10 @@ class IgnoreEmail(models.Model):
         
         if "@" not in target_email:
             return False
+
+
+        if own_email == "*":         
+            return True  
         
 
         own_parts = own_email.split("@")
