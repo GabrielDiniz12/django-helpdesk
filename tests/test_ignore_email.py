@@ -92,7 +92,7 @@ class IgnoreEmailTestCase(SimpleTestCase):
 
       self.assertTrue(resultado)
 
-      
+
 
     def test_c12_email_com_multiplos_arrobas_usa_ultimo_como_separador(self):
       regra = IgnoreEmail(email_address="*@dominio.com")
@@ -101,3 +101,4 @@ class IgnoreEmailTestCase(SimpleTestCase):
 
       self.assertTrue(resultado)
       self.assertFalse(regra.test("weird@name@outrodominio.com"))
+      self.assertFalse(IgnoreEmail(email_address="semarroba").test("joao@dominio.com"))
