@@ -1925,6 +1925,14 @@ class IgnoreEmail(models.Model):
             return username.split("+")[0]
         return username
 
+
+    @staticmethod
+    def _split_email(email):
+        if "@" not in email:
+            return None
+        return email.rsplit("@", 1)
+
+
     def test(self, email):
         """
         Possible situations:
@@ -1939,17 +1947,18 @@ class IgnoreEmail(models.Model):
         own_email = self._normalize_email(self.email_address)
         target_email = self._normalize_email(email)
 
-        
-        if "@" not in target_email:
+
+        email_parts = self._split_email(target_email)
+        if email_parts is None:
             return False
 
-
-        if own_email == "*":         
+        if own_email == "*":          
             return True  
         
 
-        own_parts = own_email.split("@")
-        email_parts = target_email.split("@")
+        own_parts = self._split_email(own_email)
+        if own_parts is None:
+            return own_email == target_email
 
         email_parts[0] = self._base_username(email_parts[0], own_parts[0])
 

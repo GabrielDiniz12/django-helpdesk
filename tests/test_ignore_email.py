@@ -91,3 +91,13 @@ class IgnoreEmailTestCase(SimpleTestCase):
       resultado = regra.test("qualquer@dominio.com")
 
       self.assertTrue(resultado)
+
+      
+
+    def test_c12_email_com_multiplos_arrobas_usa_ultimo_como_separador(self):
+      regra = IgnoreEmail(email_address="*@dominio.com")
+
+      resultado = regra.test("weird@name@dominio.com")
+
+      self.assertTrue(resultado)
+      self.assertFalse(regra.test("weird@name@outrodominio.com"))
