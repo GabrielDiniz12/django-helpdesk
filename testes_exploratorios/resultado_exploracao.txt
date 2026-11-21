@@ -1,0 +1,179 @@
+
+==============================================================================
+S1 - Caminho feliz: comentário público + Resolved + 01:30 de tempo gasto
+==============================================================================
+resposta=302 (salvou e redirecionou) destino=/tickets/1/
+status=Resolved follow-up: público=True tempo=1:30:00 título='Some django-helpdesk Problem and Resolved' e-mails enviados=1
+
+==============================================================================
+S2 - Transição de Estados: o que a TELA oferece x o que o SERVIDOR aceita
+==============================================================================
+(status: 1=Open 2=Reopened 3=Resolved 4=Closed 5=Duplicate)
+de 1-Open      | tela oferece [1, 3, 4, 5] | servidor aceitou [2, 3, 4, 5] | aceitou SEM a tela oferecer [2] | rejeitou [] | erro 500 []
+de 2-Reopened  | tela oferece [2, 3, 4, 5] | servidor aceitou [1, 3, 4, 5] | aceitou SEM a tela oferecer [1] | rejeitou [] | erro 500 []
+de 3-Resolved  | tela oferece [2, 3, 4] | servidor aceitou [1, 2, 4, 5] | aceitou SEM a tela oferecer [1, 5] | rejeitou [] | erro 500 []
+de 4-Closed    | tela oferece [2, 4] | servidor aceitou [1, 2, 3, 5] | aceitou SEM a tela oferecer [1, 3, 5] | rejeitou [] | erro 500 []
+de 5-Duplicate | tela oferece [2, 5] | servidor aceitou [1, 2, 3, 4] | aceitou SEM a tela oferecer [1, 3, 4] | rejeitou [] | erro 500 []
+
+Valores fora do domínio enviados em new_status (ticket DH-1, status inicial 1):
+new_status='0'            -> 302 (salvou e redirecionou) -> status gravado=0 exibido=0
+new_status='6'            -> 302 (salvou e redirecionou) -> status gravado=6 exibido=6
+new_status='9'            -> 302 (salvou e redirecionou) -> status gravado=9 exibido=9
+new_status='-1'           -> 302 (salvou e redirecionou) -> status gravado=-1 exibido=-1
+new_status='99'           -> 302 (salvou e redirecionou) -> status gravado=99 exibido=99
+new_status=' 3 '          -> 302 (salvou e redirecionou) -> status gravado=3 exibido='Resolved'
+new_status='3.0'          -> 500 ValueError: invalid literal for int() with base 10: '3.0'
+new_status='abc'          -> 500 ValueError: invalid literal for int() with base 10: 'abc'
+new_status=''             -> 500 ValueError: invalid literal for int() with base 10: ''
+new_status='٣'            -> 302 (salvou e redirecionou) -> status gravado=3 exibido='Resolved'
+new_status='99999999...'  -> 500 OverflowError: Python int too large to convert to SQLite INTEGER
+
+==============================================================================
+S3 - Valor Limite: campo 'Tempo gasto' (time_spent, formato HH:MM)
+==============================================================================
+time_spent=''                 -> 302 (salvou e redirecionou) -> gravado=None
+time_spent='0:00'             -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(0)
+time_spent='00:01'            -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(seconds=60)
+time_spent='1:30'             -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(seconds=5400)
+time_spent='23:59'            -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(seconds=86340)
+time_spent='24:00'            -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(days=1)
+time_spent='100:00'           -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(days=4, seconds=14400)
+time_spent='99999:59'         -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(days=4166, seconds=57540)
+time_spent='1:60'             -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(seconds=7200)
+time_spent='1:99'             -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(seconds=9540)
+time_spent='-1:30'            -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(days=-1, seconds=84600)
+time_spent='1:-30'            -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(seconds=1800)
+time_spent='1.5'              -> 500 ValueError: invalid literal for int() with base 10: '1.5'
+time_spent='1'                -> 500 ValueError: not enough values to unpack (expected 2, got 1)
+time_spent='1:30:00'          -> 500 ValueError: too many values to unpack (expected 2)
+time_spent='abc'              -> 500 ValueError: invalid literal for int() with base 10: 'abc'
+time_spent=':'                -> 500 ValueError: invalid literal for int() with base 10: ''
+time_spent='٠١:٣٠'            -> 302 (salvou e redirecionou) -> gravado=datetime.timedelta(seconds=5400)
+time_spent='999999999999:00'  -> 500 OverflowError: Python int too large to convert to C int
+
+==============================================================================
+S4 - Dono do chamado (owner): valores de borda e inválidos
+==============================================================================
+owner=0 (desatribuir)              -> 302 (salvou e redirecionou) | dono gravado=None
+owner=-1 (sem mudança)             -> 302 (salvou e redirecionou) | dono gravado=None
+owner=admin (staff)                -> 302 (salvou e redirecionou) | dono gravado=admin
+owner=atendente2 (staff)           -> 302 (salvou e redirecionou) | dono gravado=atendente2
+owner=comum (NÃO é staff)          -> 302 (salvou e redirecionou) | dono gravado=comum
+owner=inativo (conta desativada)   -> 302 (salvou e redirecionou) | dono gravado=inativo
+owner=9999 (inexistente)           -> 500 DoesNotExist: User matching query does not exist. | dono gravado=None
+owner=abc                          -> 500 ValueError: invalid literal for int() with base 10: 'abc' | dono gravado=None
+owner='' (vazio)                   -> 500 ValueError: invalid literal for int() with base 10: '' | dono gravado=None
+
+==============================================================================
+S5 - Comentário: sintaxe de template, HTML e limites de tamanho
+==============================================================================
+variável de template {{ ticket.title }}              -> 302 (salvou e redirecionou) | gravado='Titulo: Some django-helpdesk Problem'
+{{ ticket.submitter_email }} e {{ queue.email_address }} -> 302 (salvou e redirecionou) | gravado='helpdesk@example.com | django-helpdesk@example.com'
+'{{' sem fechar                                      -> 302 (salvou e redirecionou) | gravado='texto com {{ aberto'
+'{% load static %}'                                  -> 302 (salvou e redirecionou) | gravado='{% load static %} ok'
+<script>alert(1)</script>                            -> 302 (salvou e redirecionou) | gravado='<script>alert(1)</script>' | script CRU na página pública=False
+
+Tamanho do comentário (limite padrão do Django para campos de texto: 2.621.440 bytes):
+comentário de         0 caracteres -> 302 (salvou e redirecionou) em  0.0s | follow-up criado=None
+comentário de         1 caracteres -> 302 (salvou e redirecionou) em  0.1s | follow-up criado=True
+comentário de   100,000 caracteres -> 302 (salvou e redirecionou) em  0.1s | follow-up criado=True
+comentário de 2,600,000 caracteres -> 302 (salvou e redirecionou) em  0.3s | follow-up criado=True
+comentário de 2,700,000 caracteres -> 400 em  0.4s | follow-up criado=False
+comentário só com espaços            -> 302 (salvou e redirecionou) | follow-ups=2
+
+==============================================================================
+S6 - Tabela de Decisão: público x comentário x Resolved -> follow-up, visibilidade e e-mail
+==============================================================================
+regra | público | comentário | muda p/ Resolved | follow-up criado | texto aparece em /view/ | e-mails (destinatários)
+TD-01  | sim     | sim        | não              | sim              | True              | ['cliente@example.com', 'watcher@example.com']
+TD-02  | sim     | sim        | sim              | sim              | True              | ['cliente@example.com', 'watcher@example.com']
+TD-03  | sim     | não        | não              | não              | -                 | []
+TD-04  | sim     | não        | sim              | sim              | -                 | ['cliente@example.com', 'watcher@example.com']
+TD-05  | não     | sim        | não              | sim              | False             | ['watcher@example.com']
+TD-06  | não     | sim        | sim              | sim              | True              | ['watcher@example.com']
+TD-07  | não     | não        | não              | não              | -                 | []
+TD-08  | não     | não        | sim              | sim              | -                 | ['watcher@example.com']
+
+==============================================================================
+S7 - Autorização, CSRF e chamado inexistente
+==============================================================================
+anônimo envia atualização                 -> 302 (salvou e redirecionou) /login/?next=/tickets/1/update/
+usuário comum (não staff) envia           -> 403 
+staff SEM token CSRF                      -> 403
+POST em chamado inexistente (id 99999)    -> 500 DoesNotExist: Ticket matching query does not exist.
+GET  página de chamado inexistente        -> 404
+GET  na rota de update (sem POST)         -> 200
+
+==============================================================================
+S8 - Anexos na atualização (e atomicidade quando o anexo é inválido)
+==============================================================================
+arquivo .txt válido          -> 302 (salvou e redirecionou) | anexos gravados=1
+arquivo .exe                 -> 200 | anexos gravados=0
+arquivo .html                -> 200 | anexos gravados=0
+arquivo vazio (0 bytes)      -> 200 | anexos gravados=0
+nome com ../../              -> 302 (salvou e redirecionou) | anexos gravados=1
+nome com 300 caracteres      -> 500 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Luiz\\ | anexos gravados=0
+
+Fechar chamado COM anexo inválido (.exe) -> 200 | status do chamado depois=Open | follow-ups criados=1
+
+==============================================================================
+S9 - Repetição da operação (duplo clique em 'Update This Ticket')
+==============================================================================
+2 envios idênticos -> follow-ups novos=2 | e-mails enviados=2
+
+==============================================================================
+S10 - Dependência: a tela bloqueia resolver, o servidor bloqueia?
+==============================================================================
+DH-1 depende de SP-2 (aberto): can_be_resolved=False
+POST new_status=3 -> 302 (salvou e redirecionou) | status do DH-1 depois=Resolved
+
+==============================================================================
+S11 - Título e prioridade: limites e valores inválidos
+==============================================================================
+título com    0 caracteres -> 200 | título gravado tem 28 caracteres
+título com    1 caracteres -> 302 (salvou e redirecionou) | título gravado tem 1 caracteres
+título com  200 caracteres -> 302 (salvou e redirecionou) | título gravado tem 200 caracteres
+título com  201 caracteres -> 200 | título gravado tem 28 caracteres
+título com 1000 caracteres -> 200 | título gravado tem 28 caracteres
+priority='0'    -> 200 | prioridade gravada=3
+priority='1'    -> 302 (salvou e redirecionou) | prioridade gravada=1
+priority='5'    -> 302 (salvou e redirecionou) | prioridade gravada=5
+priority='6'    -> 200 | prioridade gravada=3
+priority='abc'  -> 200 | prioridade gravada=3
+priority=''     -> 200 | prioridade gravada=3
+
+==============================================================================
+S12 - Efeito de um status inválido (9) nas outras telas
+==============================================================================
+status gravado=9 | status em OPEN_STATUSES=False
+GET /tickets/1/ (staff) -> 200 | GET /view/ (público) -> 200
+fila padrão do atendente: total=2 | DH-1 aparece na fila=False
+opções de status oferecidas agora pela tela: [1, 2, 3, 4, 5]
+
+==============================================================================
+S13 - Tempo gasto negativo ou absurdo: como o sistema exibe e soma
+==============================================================================
+time_spent='-1:30'     -> 302 (salvou e redirecionou) | exibido pelo sistema='-1h:30m' | tempo total do chamado=datetime.timedelta(days=-1, seconds=84600)
+time_spent='99999:59'  -> 302 (salvou e redirecionou) | exibido pelo sistema='99999h:59m' | tempo total do chamado=datetime.timedelta(days=4166, seconds=57540)
+
+==============================================================================
+S14 - Resolução: reabrir e resolver de novo SEM comentário apaga a solução anterior?
+==============================================================================
+1) Resolved com comentário -> resolução='Solução correta: reiniciar o serviço.'
+2) Reopened               -> status=Reopened resolução='Solução correta: reiniciar o serviço.'
+3) Resolved SEM comentário -> status=Resolved resolução=''
+
+==============================================================================
+S15 - Privacidade: o comentário PRIVADO (só da equipe) chega por e-mail a quem está em cópia?
+==============================================================================
+follow-up público=False
+e-mail para ['watcher@example.com']: contém o texto privado=True
+observadores (TicketCC) do chamado: [('watcher@example.com', None)]
+
+==============================================================================
+S16 - Privacidade: comentário PRIVADO + mudar para Resolved aparece para o solicitante?
+==============================================================================
+privado, SEM mudar o status        -> follow-up público=False | campo Resolução=None | nota aparece na página pública=False
+privado, mudando para Resolved     -> follow-up público=False | campo Resolução='NOTA-INTERNA-XYZ' | nota aparece na página pública=True
+
+Fim da exploração. Banco original intacto; cópia temporária: C:\Users\Luiz\AppData\Local\Temp\tmp5d5bm8no\base_exploracao.sqlite3
